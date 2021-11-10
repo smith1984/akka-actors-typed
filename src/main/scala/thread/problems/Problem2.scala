@@ -15,6 +15,7 @@ object Problem2 extends App {
 
         task.synchronized {
           println("[background] I have a task!")
+          throw new Exception();
           task.run()
           task = null
         }
@@ -36,5 +37,5 @@ object Problem2 extends App {
   Thread.sleep(1000)
   Producer.sendTaskToBackgroundThread(() => println(42))
   Thread.sleep(1000)
-  Producer.sendTaskToBackgroundThread(() => println("this should run in the background"))
+  Producer.sendTaskToBackgroundThread(() =>  println("this should run in the background"))
 }

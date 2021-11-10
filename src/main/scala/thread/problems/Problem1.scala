@@ -9,6 +9,7 @@ object Problem1 extends App {
   }
 
   val account = Account(2000)
+
   for(_ <- 1 to 1000) {
     new Thread(() => account.withdraw(1)).start()
   }
