@@ -73,7 +73,9 @@ object CompanyActors {
             Behaviors.same
           }
         })
-        .onFailure[DeathPactException](SupervisorStrategy.restart)
+//        .onFailure[DeathPactException](SupervisorStrategy.restart)
+        .onFailure[IllegalStateException](
+          SupervisorStrategy.restart.withLimit(maxNrOfRetries = 10, withinTimeRange = 10.seconds))
   }
 }
 
@@ -90,7 +92,7 @@ class StoppingActorSpec extends ScalaTestWithActorTestKit with AnyWordSpecLike {
 
       replyProbe.expectMessage("hi 1")
 
-      boss ! Fail("ping")
+      boss.tell(Fail("ping"))
 
       eventually {
         boss ! Hello("hi 2", replyProbe.ref)
