@@ -21,9 +21,6 @@ object Solution1  extends App {
   }
 
 
-
-
-
   class ObjectActor(ctx: ActorContext[String]) extends AbstractBehavior[String](ctx) {
     override def onMessage(msg: String): Behavior[String] = {
       ctx.log.info(msg)
@@ -41,10 +38,10 @@ object Solution1  extends App {
 
   def apply(): Behavior[NotUsed] =
     Behaviors.setup { ctx =>
-//      val functionalActorRef: ActorRef[String] = ctx.spawn(FunctionalActor(), "functional_actor")
-//
-//      functionalActorRef ! "Hello I'm initiated functional actor"
-//      functionalActorRef.tell("Another message")
+      val functionalActorRef: ActorRef[String] = ctx.spawn(FunctionalActor(), "functional_actor")
+
+      functionalActorRef ! "Hello I'm initiated functional actor"
+      functionalActorRef.tell("Another message")
 
 
 

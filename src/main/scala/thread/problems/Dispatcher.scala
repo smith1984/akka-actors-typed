@@ -4,7 +4,7 @@ import akka.NotUsed
 import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
 import akka.actor.typed.scaladsl.Behaviors
 import thread.problems.Dispatcher.TaskDispatcher.{LogWork, ParseUrl}
-import thread.problems.State.{Add, StateActor}
+import thread.problems.State.{Deposit, Account}
 
 import java.util.UUID
 
