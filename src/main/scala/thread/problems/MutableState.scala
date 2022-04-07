@@ -46,11 +46,17 @@ object MutableState extends App {
       for(_ <- 1 to 1000) {
         account1 ! Deposit(1)
       }
+      for(_ <- 1 to 1000) {
+        account2 ! Deposit(1)
+      }
 
       account2 ! Get()
 
       for(_ <- 1 to 1000) {
         account1 ! Withdraw(1)
+      }
+      for(_ <- 1 to 1000) {
+        account2 ! Withdraw(1)
       }
 
       account1 ! Get()
@@ -60,7 +66,7 @@ object MutableState extends App {
     }
 
 
-  val value = State()
+  val value = MutableState()
   implicit val system: ActorSystem[NotUsed] = ActorSystem(value, "akka_typed")
 
 }

@@ -26,7 +26,6 @@ object State extends App {
         case Add(v) =>
 //          state = state + v
           val accNew = acc + v
-          throw new Exception("sdfsdfsdf")
           ctx.log.info(s"Add number $v to $acc. Total state is $accNew");
           inc(accNew)
 

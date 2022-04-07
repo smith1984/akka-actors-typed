@@ -4,7 +4,6 @@ import akka.NotUsed
 import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
 import akka.actor.typed.scaladsl.Behaviors
 import thread.problems.Dispatcher.TaskDispatcher.{LogWork, ParseUrl}
-import thread.problems.State.{Deposit, Account}
 
 import java.util.UUID
 
@@ -29,7 +28,13 @@ object Dispatcher extends App {
 
       Behaviors.receiveMessage {
         case LogWork(work) =>
-          val logWorker = ctx.spawn(LogWorker(), s"LogWorkerNo${UUID.randomUUID()}")
+          val logWorker: ActorRef[LogRequest] = ctx.spawn(LogWorker(), s"LogWorkerNo${UUID.randomUUID()}")
+          //
+          // core1 -> thread1 -> actor LogWorker instance1
+          // core2 -> thread2 -> actor LogWorker instance2
+          // core3 -> thread3 -> actor LogWorker instance3
+
+
           ctx.log.info(s"Dispatcher received log $work")
           logWorker ! Log(work, logAdapter)
           Behaviors.same
@@ -51,17 +56,18 @@ object Dispatcher extends App {
   }
 
   object LogWorker {
-    sealed trait LogCommand
-    case class Log(l: String, replyTo: ActorRef[LogResponse]) extends LogCommand
+    sealed trait LogRequest
+    case class Log(l: String, replyTo: ActorRef[LogResponse]) extends LogRequest
 
     sealed trait LogResponse
     case class LogDone() extends LogResponse
 
-    def apply(): Behavior[LogCommand] = Behaviors.setup { ctx =>
+    def apply(): Behavior[LogRequest] = Behaviors.setup { ctx =>
       Behaviors.receiveMessage {
-        case Log(l, replyTo) =>
+        case Log(_, dispatcher) =>
           ctx.log.info("Log work in progress")
-          replyTo ! LogDone()
+          Thread.sleep(10000)
+          dispatcher ! LogDone()
           Behaviors.stopped
       }
     }
