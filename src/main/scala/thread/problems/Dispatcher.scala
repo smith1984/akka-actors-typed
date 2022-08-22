@@ -3,7 +3,7 @@ package thread.problems
 import akka.NotUsed
 import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
 import akka.actor.typed.scaladsl.Behaviors
-import thread.problems.Dispatcher.TaskDispatcher.{LogWork, ParseUrl}
+import thread.problems.Dispatcher.TaskDispatcher.{LogFilter, ParseUrl}
 
 import java.util.UUID
 
@@ -16,25 +16,18 @@ object Dispatcher extends App {
 
     sealed trait CommandDispatcher
     case class ParseUrl(url: String) extends CommandDispatcher
-    case class LogWork(work: String) extends CommandDispatcher
+    case class LogFilter(work: String) extends CommandDispatcher
 
     case class LogResponseWrapper(msg: LogResponse) extends CommandDispatcher
     case class ParseResponseWrapper(msg: ParseResponse) extends CommandDispatcher
 
     def apply(): Behavior[CommandDispatcher] = Behaviors.setup { ctx =>
-      val logAdapter: ActorRef[LogResponse] = ctx.messageAdapter[LogResponse](rs => LogResponseWrapper(rs))
+      val logAdapter: ActorRef[LogResponse] = ctx.messageAdapter[LogResponse]((rs: LogResponse) => LogResponseWrapper(rs))
       val parseAdapter: ActorRef[ParseResponse] = ctx.messageAdapter[ParseResponse](rs => ParseResponseWrapper(rs))
 
-
       Behaviors.receiveMessage {
-        case LogWork(work) =>
+        case LogFilter(work) =>
           val logWorker: ActorRef[LogRequest] = ctx.spawn(LogWorker(), s"LogWorkerNo${UUID.randomUUID()}")
-          //
-          // core1 -> thread1 -> actor LogWorker instance1
-          // core2 -> thread2 -> actor LogWorker instance2
-          // core3 -> thread3 -> actor LogWorker instance3
-
-
           ctx.log.info(s"Dispatcher received log $work")
           logWorker ! Log(work, logAdapter)
           Behaviors.same
@@ -64,10 +57,10 @@ object Dispatcher extends App {
 
     def apply(): Behavior[LogRequest] = Behaviors.setup { ctx =>
       Behaviors.receiveMessage {
-        case Log(_, dispatcher) =>
+        case Log(_, dispatcherAdapter) =>
           ctx.log.info("Log work in progress")
           Thread.sleep(10000)
-          dispatcher ! LogDone()
+          dispatcherAdapter ! LogDone()
           Behaviors.stopped
       }
     }
@@ -96,7 +89,7 @@ object Dispatcher extends App {
     Behaviors.setup { ctx =>
       val dispatcherActorRef = ctx.spawn(TaskDispatcher(), "dispatcher")
 
-      dispatcherActorRef ! LogWork("asdasdasd")
+      dispatcherActorRef ! LogFilter("asdasdasd")
 
       dispatcherActorRef ! ParseUrl("adsasdasdasd")
 

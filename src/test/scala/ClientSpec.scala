@@ -41,8 +41,8 @@ class ClientSpec extends AnyWordSpec with Matchers {
   "Typed probe actor" must {
 
     "send back the message - Job submitted with Synchronous testing" in {
-      val testKit = BehaviorTestKit(Client())
-      val inbox = TestInbox[String]()
+      val testKit: BehaviorTestKit[Command] = BehaviorTestKit(Client())
+      val inbox: TestInbox[String] = TestInbox[String]()
 
       testKit.run(Client.JobSubmit(inbox.ref))
 
@@ -52,13 +52,15 @@ class ClientSpec extends AnyWordSpec with Matchers {
     }
 
     "send back the message - Job submitted with Asynchronous testing" in {
-      val kit = ActorTestKit()
+      val kit: ActorTestKit = ActorTestKit()
 
-      val client = kit.spawn(Client())
+      val client: ActorRef[Command] = kit.spawn(Client())
       val probe = kit.createTestProbe[String]()
 
       client ! Client.JobSubmit(probe.ref)
+      client ! Client.JobSubmit(probe.ref)
 
+      probe.expectMessage("Job submitted")
       probe.expectMessage("Job submitted")
     }
 
@@ -70,10 +72,12 @@ class ClientSpec extends AnyWordSpec with Matchers {
       val probe = kit.createTestProbe[String]()
 
       client ! Client.JobSubmit(probe.ref)
+      client ! Client.JobSubmit(probe.ref)
 
       //      probe.expectMessage("Job submitted")
 
-      //      probe.expectMessageType[String]
+      probe.expectMessageType[String]
+
       probe.receiveMessages(1)
     }
 

@@ -40,6 +40,8 @@ object Solution1  extends App {
     Behaviors.setup { ctx =>
       val functionalActorRef: ActorRef[String] = ctx.spawn(FunctionalActor(), "functional_actor")
 
+      FunctionalActor.apply()
+
       functionalActorRef ! "Hello I'm initiated functional actor"
       functionalActorRef.tell("Another message")
 

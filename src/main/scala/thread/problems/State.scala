@@ -12,19 +12,13 @@ object State extends App {
 
 
   object StateActor {
-  //  var state = 0
-
     def apply(init: Int): Behavior[Command] =
-    {
-//      state = init
-      inc(init)
-    }
+    {inc(init)}
 
 
-    def inc(acc: Int): Behavior[Command] = Behaviors.setup{ ctx =>
+    def inc(acc: Int): Behavior[Command] = Behaviors.setup { ctx =>
       Behaviors.receiveMessage{
         case Add(v) =>
-//          state = state + v
           val accNew = acc + v
           ctx.log.info(s"Add number $v to $acc. Total state is $accNew");
           inc(accNew)
@@ -39,7 +33,7 @@ object State extends App {
 
   def apply(): Behavior[NotUsed] =
     Behaviors.setup { ctx =>
-      val stateActorRef = ctx.spawn(StateActor(10), "state_actor")
+      val stateActorRef: ActorRef[Command] = ctx.spawn(StateActor(10), "state_actor")
 
       stateActorRef ! Add(5)
       stateActorRef ! Add(7)
