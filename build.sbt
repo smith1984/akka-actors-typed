@@ -20,4 +20,4 @@ libraryDependencies ++= Seq(
 )
 
 libraryDependencies += "com.typesafe"   % "config"          % "1.4.0"
-libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.3"
+libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.11"

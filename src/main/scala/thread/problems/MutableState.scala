@@ -2,7 +2,7 @@ package thread.problems
 
 import akka.NotUsed
 import akka.actor.typed.scaladsl.Behaviors
-import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
+import akka.actor.typed.{ActorRef, ActorSystem, Behavior, PostStop}
 import thread.problems.Solution1.{FunctionalActor, ObjectActor}
 
 object MutableState extends App {
@@ -15,23 +15,39 @@ object MutableState extends App {
 
   object Account {
     def apply(am: Int): Behavior[Command] = Behaviors.setup { ctx =>
-      var amount: Int = am
+//      ctx.setLoggerName(s"${ctx.self.path.name}") # Option 1
+      val staticMdc = Map("name" -> ctx.self.path.name)
 
-      Behaviors.receiveMessage {
-        case Deposit(v) =>
-          amount = amount + v
-          ctx.log.info(s"Deposit money $v to $amount. Total state is $amount")
-          Behaviors.same
+      var amount: Int = 0
 
-        case Withdraw(v) =>
-          amount = amount - v
-          ctx.log.info(s"Withdraw money $v to $amount. Total state is $amount")
-          Behaviors.same
+      Behaviors.withMdc[Command](staticMdc) {
+              Behaviors.receiveMessage[Command] {
+                case Deposit(v) =>
+                  throw new RuntimeException("Kakogo figa")
+                  amount = amount + v
+                  ctx.log.info(s"Deposit money $v to $amount. Total state is $amount")
+//                  ctx.log.info(s"name = ${ctx.self.path.name}")
+                  Behaviors.same
 
-        case Get() =>
-          ctx.log.info(s"Total get state is $amount");
-          Behaviors.same
+                case Withdraw(v) =>
+                  amount = amount - v
+                  ctx.log.info(s"Withdraw money $v to $amount. Total state is $amount")
+                  Behaviors.same
+
+                case Get() =>
+                  ctx.log.info(s"Total get state is $amount");
+                  Behaviors.same
+              }.receiveSignal {
+                case (context, PostStop) =>
+                  context.log.error(s"Master Control Program stopped ${context.self.path.name}")
+                  Behaviors.same
+              }
       }
+
+
+
+
+
     }
   }
 
@@ -43,19 +59,19 @@ object MutableState extends App {
 
       account2 ! Get()
 
-      for(_ <- 1 to 1000) {
+      for (_ <- 1 to 1000) {
         account1 ! Deposit(1)
       }
-      for(_ <- 1 to 1000) {
+      for (_ <- 1 to 1000) {
         account2 ! Deposit(1)
       }
 
       account2 ! Get()
 
-      for(_ <- 1 to 1000) {
+      for (_ <- 1 to 1000) {
         account1 ! Withdraw(1)
       }
-      for(_ <- 1 to 1000) {
+      for (_ <- 1 to 1000) {
         account2 ! Withdraw(1)
       }
 
@@ -66,7 +82,11 @@ object MutableState extends App {
     }
 
 
-  val value = MutableState()
+  val value = MutableState.apply()
   implicit val system: ActorSystem[NotUsed] = ActorSystem(value, "akka_typed")
 
+  Thread.sleep(10000)
+
+
+  system.terminate()
 }

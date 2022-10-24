@@ -3,11 +3,11 @@ package thread.problems
 import akka.NotUsed
 import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
 import akka.actor.typed.scaladsl.Behaviors
-import thread.problems.Dispatcher.TaskDispatcher.{LogFilter, ParseUrl}
+import thread.problems.Adapter.TaskDispatcher.{LogFilter, ParseUrl}
 
 import java.util.UUID
 
-object Dispatcher extends App {
+object Adapter extends App {
 
 
   object TaskDispatcher {
@@ -96,7 +96,7 @@ object Dispatcher extends App {
       Behaviors.same
     }
 
-  implicit val system: ActorSystem[NotUsed] = ActorSystem(Dispatcher(), "dispatcher")
+  implicit val system: ActorSystem[NotUsed] = ActorSystem(Adapter(), "dispatcher")
 
   Thread.sleep(5000)
 
