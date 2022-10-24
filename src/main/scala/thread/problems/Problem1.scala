@@ -3,9 +3,9 @@ package thread.problems
 object Problem1 extends App {
 
   case class Account(@volatile private var amount: Int) {
-    def withdraw(money: Int) = this.synchronized {this.amount -= money}
+    def withdraw(money: Int) = {this.amount -= money}
 
-    def deposit(money: Int) = this.synchronized {this.amount += money}
+    def deposit(money: Int) = {this.amount += money}
   }
 
   val account = Account(2000)
